@@ -2,6 +2,11 @@ name: Open Issue on Failed Workflow
 
 on:
   workflow_run:
+    workflows:
+      - CI
+      - Merge Policy Check
+      - Direct Push Guard
+      - Sync Repo Operations
     types:
       - completed
 
