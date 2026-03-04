@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,50 +21,50 @@
         <p class="eyebrow">Browser Arcade</p>
         <h1>Snake Sunburst</h1>
         <p class="subtitle">
-          Klassisches Snake in einer modernen Oberfläche mit klarer Lesbarkeit,
-          schnellen Controls und responsivem Layout.
+          Classic Snake gameplay in a polished interface with clear readability,
+          snappy controls, and a responsive layout.
         </p>
       </header>
 
       <section class="playground reveal" aria-label="Snake game">
         <div class="hud">
           <article class="stat-card">
-            <span>Punkte</span>
+            <span>Score</span>
             <strong id="score">0</strong>
           </article>
           <article class="stat-card">
-            <span>Highscore</span>
+            <span>High Score</span>
             <strong id="best-score">0</strong>
           </article>
           <article class="stat-card status-card">
             <span>Status</span>
-            <strong id="status">Bereit</strong>
+            <strong id="status">Ready</strong>
           </article>
         </div>
 
         <div class="canvas-shell">
-          <canvas id="board" width="576" height="576" aria-label="Snake Spielfeld"></canvas>
+          <canvas id="board" width="576" height="576" aria-label="Snake game board"></canvas>
         </div>
 
         <div class="controls-row">
           <label class="speed-control" for="speed">
-            Tempo
+            Speed
             <span id="speed-label">10</span>
           </label>
           <input id="speed" type="range" min="6" max="18" step="1" value="10" />
 
           <div class="buttons">
             <button type="button" id="pause-btn">Pause</button>
-            <button type="button" id="restart-btn">Neustart</button>
+            <button type="button" id="restart-btn">Restart</button>
           </div>
         </div>
       </section>
 
-      <section class="help reveal" aria-label="Steuerung und Tipps">
-        <h2>Steuerung</h2>
-        <p>Pfeiltasten oder <b>WASD</b>. Mit <b>Leertaste</b> pausieren, mit <b>Enter</b> neu starten.</p>
+      <section class="help reveal" aria-label="Controls and tips">
+        <h2>Controls</h2>
+        <p>Use arrow keys or <b>WASD</b>. Press <b>Space</b> to pause and <b>Enter</b> to restart.</p>
 
-        <div class="pad" aria-label="Touch Steuerung">
+        <div class="pad" aria-label="Touch controls">
           <button type="button" data-direction="up">↑</button>
           <button type="button" data-direction="left">←</button>
           <button type="button" data-direction="down">↓</button>

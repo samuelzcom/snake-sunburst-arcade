@@ -1,15 +1,15 @@
 # Snake Sunburst Arcade
 
-Modernes Snake-Game im Browser mit bewusst gestaltetem UI, responsive Layout und klarer Bedienung.
+Modern browser-based Snake game with a polished UI, responsive layout, and straightforward controls.
 
 ## Features
 
-- Stilvolle, animierte Oberfläche (Gradient-Hintergrund, Glassmorphism-Karten, Reveal-Animationen)
-- Klassisches Snake-Gameplay mit kollisionsbasierter Game-Over-Logik
-- Steuerung via Pfeiltasten oder WASD
-- Touch-freundliche D-Pad Buttons
-- Pause/Weiter, Neustart, variable Geschwindigkeit
-- Persistenter Highscore via `localStorage`
+- Stylish animated interface (gradient backdrop, glassmorphism cards, reveal animations)
+- Classic Snake gameplay with collision-based game-over logic
+- Controls via arrow keys or WASD
+- Touch-friendly D-pad buttons
+- Pause/resume, restart, and adjustable speed
+- Persistent high score stored in `localStorage`
 
 ## Setup
 
@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Danach im Browser die angezeigte lokale URL öffnen.
+Then open the local URL shown in your browser.
 
 ## Build
 

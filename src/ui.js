@@ -33,8 +33,8 @@ export function bindUI(game, elements) {
       return;
     }
 
-    status.textContent = state.paused ? "Pausiert" : "Aktiv";
-    pauseButton.textContent = state.paused ? "Weiter" : "Pause";
+    status.textContent = state.paused ? "Paused" : "Running";
+    pauseButton.textContent = state.paused ? "Resume" : "Pause";
   };
 
   game.onScoreChange((snapshot) => {

@@ -200,7 +200,7 @@ export class SnakeGame {
     });
 
     if (!this.alive || this.paused) {
-      this.renderOverlay(!this.alive ? "Game Over" : "Pausiert", !this.alive ? "Enter = Neustart" : "Leertaste = Weiter");
+      this.renderOverlay(!this.alive ? "Game Over" : "Paused", !this.alive ? "Enter = Restart" : "Space = Resume");
     }
   }
 
