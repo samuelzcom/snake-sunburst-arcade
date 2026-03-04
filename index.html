@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Sunburst Arcade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <main class="page">
+      <header class="hero reveal">
+        <p class="eyebrow">Browser Arcade</p>
+        <h1>Snake Sunburst</h1>
+        <p class="subtitle">
+          Klassisches Snake in einer modernen Oberfläche mit klarer Lesbarkeit,
+          schnellen Controls und responsivem Layout.
+        </p>
+      </header>
+
+      <section class="playground reveal" aria-label="Snake game">
+        <div class="hud">
+          <article class="stat-card">
+            <span>Punkte</span>
+            <strong id="score">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Highscore</span>
+            <strong id="best-score">0</strong>
+          </article>
+          <article class="stat-card status-card">
+            <span>Status</span>
+            <strong id="status">Bereit</strong>
+          </article>
+        </div>
+
+        <div class="canvas-shell">
+          <canvas id="board" width="576" height="576" aria-label="Snake Spielfeld"></canvas>
+        </div>
+
+        <div class="controls-row">
+          <label class="speed-control" for="speed">
+            Tempo
+            <span id="speed-label">10</span>
+          </label>
+          <input id="speed" type="range" min="6" max="18" step="1" value="10" />
+
+          <div class="buttons">
+            <button type="button" id="pause-btn">Pause</button>
+            <button type="button" id="restart-btn">Neustart</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="help reveal" aria-label="Steuerung und Tipps">
+        <h2>Steuerung</h2>
+        <p>Pfeiltasten oder <b>WASD</b>. Mit <b>Leertaste</b> pausieren, mit <b>Enter</b> neu starten.</p>
+
+        <div class="pad" aria-label="Touch Steuerung">
+          <button type="button" data-direction="up">↑</button>
+          <button type="button" data-direction="left">←</button>
+          <button type="button" data-direction="down">↓</button>
+          <button type="button" data-direction="right">→</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
