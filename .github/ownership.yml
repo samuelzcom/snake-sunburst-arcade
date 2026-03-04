@@ -1,6 +1,6 @@
 version: 1
 core:
-  operations_repo: repo-operations
+  operations_repo: samuelz-platform
   primary_product_repo: samuelz-web
 ownership:
   operations:
@@ -19,7 +19,7 @@ ownership:
     scope:
       - "all non-operations areas"
 process:
-  single_source: "repo-operations"
+  single_source: "samuelz-platform"
   distribution: "weekly + manual workflow dispatch via repo-operations-sync"
   drift_prevention:
     - "Changes are made in this repository only."

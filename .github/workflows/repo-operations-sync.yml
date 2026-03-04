@@ -17,7 +17,7 @@ jobs:
 
       - name: Sync operations templates from source
         env:
-          SOURCE_REPO: ${{ vars.REPO_OPERATIONS_SOURCE || 'samuelzcom/repo-operations' }}
+          SOURCE_REPO: ${{ vars.REPO_OPERATIONS_SOURCE || 'samuelzcom/samuelz-platform' }}
           SOURCE_REF: ${{ vars.REPO_OPERATIONS_REF || 'main' }}
           GH_TOKEN: ${{ secrets.REPO_OPERATIONS_TOKEN }}
           TARGET_BRANCH: ${{ github.ref_name }}

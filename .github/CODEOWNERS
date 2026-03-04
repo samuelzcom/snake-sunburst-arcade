@@ -1,4 +1,4 @@
-# Operations ownership is sourced from repo-operations.
+# Operations ownership is sourced from samuelz-platform.
 # Keep files aligned via repo-operations-sync.
 
 /.github/workflows/repo-operations-*.yml @samuelzcom

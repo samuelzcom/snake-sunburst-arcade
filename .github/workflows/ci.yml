@@ -44,7 +44,7 @@ jobs:
   node-ci:
     needs: detect
     if: ${{ needs.detect.outputs.has_package == 'true' }}
-    uses: samuelzcom/samuelz-ci/.github/workflows/node-ci.yml@8a80ff8ea4b07d762fa1773437b0620aa6ac024b
+    uses: samuelzcom/samuelz-platform/.github/workflows/node-ci.yml@8a80ff8ea4b07d762fa1773437b0620aa6ac024b
     with:
       node-version: "20"
       working-directory: "."
