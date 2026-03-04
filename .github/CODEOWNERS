@@ -1,0 +1,16 @@
+# Operations ownership is sourced from repo-operations.
+# Keep files aligned via repo-operations-sync.
+
+/.github/workflows/repo-operations-*.yml @samuelzcom
+/.github/workflows/repo-operations-action-failure-issue.yml @samuelzcom
+/.github/workflows/repo-operations-direct-push-guard.yml @samuelzcom
+/.github/workflows/repo-operations-merge-policy.yml @samuelzcom
+/.github/workflows/repo-operations-sync.yml @samuelzcom
+/.github/workflows/ci.yml @samuelzcom
+/.github/dependabot.yml @samuelzcom
+/.github/ownership.yml @samuelzcom
+/.editorconfig @samuelzcom
+/Makefile @samuelzcom
+
+# Product ownership (application code) handled by core product owners.
+/* @samuelzcom

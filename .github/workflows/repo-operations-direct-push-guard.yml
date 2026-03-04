@@ -1,0 +1,71 @@
+name: Direct Push Guard
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect direct push to main without PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const sha = context.payload.after;
+            const actor = context.actor;
+
+            // Allow internal bot-driven sync and automation commits.
+            if (actor === "github-actions[bot]") {
+              core.info("Push performed by github-actions[bot]; skipping direct-push guard.");
+              return;
+            }
+
+            const prs = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+              owner,
+              repo,
+              commit_sha: sha,
+              per_page: 100,
+            });
+
+            const mergedPr = prs.find((pr) => pr.merged_at);
+            if (mergedPr) {
+              core.info(`Commit ${sha} is associated with merged PR #${mergedPr.number}.`);
+              return;
+            }
+
+            const shortSha = sha.slice(0, 12);
+            const title = `Direct push detected on main (${shortSha})`;
+
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            });
+
+            const exists = openIssues.some((issue) => issue.title === title);
+            if (!exists) {
+              const body = [
+                "A direct push to `main` was detected without an associated merged pull request.",
+                "",
+                `- Commit: \`${sha}\``,
+                `- Actor: @${actor}`,
+                `- Compare URL: ${context.payload.compare}`,
+                "",
+                "## Required action",
+                "1. Recreate this change through a pull request.",
+                "2. Ensure CI is green.",
+                "3. Ensure at least one approval before merge.",
+              ].join("\n");
+
+              await github.rest.issues.create({ owner, repo, title, body });
+            }
+
+            core.setFailed("Direct pushes to main are not allowed. Use pull requests with approval and green CI.");

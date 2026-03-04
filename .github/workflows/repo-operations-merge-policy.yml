@@ -1,0 +1,70 @@
+name: Merge Policy Check
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+permissions:
+  pull-requests: read
+  actions: read
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce PR policy for main
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            if (pr.base.ref !== "main") {
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner,
+              repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+
+            const approvers = new Set();
+            for (const review of reviews) {
+              if (review.state === "APPROVED") {
+                approvers.add(review.user.login);
+              }
+            }
+
+            if (approvers.size < 1) {
+              core.setFailed("Pull requests targeting main require at least one approval.");
+              return;
+            }
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner,
+              repo,
+              event: "pull_request",
+              head_sha: pr.head.sha,
+              per_page: 100,
+            });
+
+            const ciRuns = runs.filter((run) => run.name === "CI");
+
+            if (ciRuns.length === 0) {
+              core.setFailed("CI workflow has not completed for this pull request head commit.");
+              return;
+            }
+
+            const latestCiRun = ciRuns.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
+            if (latestCiRun.status !== "completed" || latestCiRun.conclusion !== "success") {
+              core.setFailed(
+                `CI workflow must be green before merge. Latest status: ${latestCiRun.status}/${latestCiRun.conclusion}.`
+              );
+            }

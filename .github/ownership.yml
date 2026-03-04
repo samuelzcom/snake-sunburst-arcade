@@ -1,0 +1,27 @@
+version: 1
+core:
+  operations_repo: repo-operations
+  primary_product_repo: samuelz-web
+ownership:
+  operations:
+    owner: "@samuelzcom"
+    scope:
+      - "all .github/workflows/repo-operations-*.yml"
+      - ".github/workflows/ci.yml"
+      - ".github/dependabot.yml"
+      - ".github/ownership.yml"
+      - ".github/OWNERSHIP.md"
+      - ".github/CODEOWNERS"
+      - ".editorconfig"
+      - "Makefile"
+  product:
+    owner: "@samuelzcom"
+    scope:
+      - "all non-operations areas"
+process:
+  single_source: "repo-operations"
+  distribution: "weekly + manual workflow dispatch via repo-operations-sync"
+  drift_prevention:
+    - "Changes are made in this repository only."
+    - "Sibling repos are updated through sync workflow."
+    - "Do not manually edit files listed in operations scope in sibling repos."
