@@ -1,0 +1,162 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      has_package: ${{ steps.check.outputs.has_package }}
+      lockfile_type: ${{ steps.check.outputs.lockfile_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect project type
+        id: check
+        shell: bash
+        run: |
+          if [ -f package.json ]; then
+            echo "has_package=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_package=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -f package-lock.json ]; then
+            echo "lockfile_type=npm" >> "$GITHUB_OUTPUT"
+          elif [ -f pnpm-lock.yaml ]; then
+            echo "lockfile_type=pnpm" >> "$GITHUB_OUTPUT"
+          elif [ -f yarn.lock ]; then
+            echo "lockfile_type=yarn" >> "$GITHUB_OUTPUT"
+          elif [ -f bun.lockb ]; then
+            echo "lockfile_type=bun" >> "$GITHUB_OUTPUT"
+          else
+            echo "lockfile_type=none" >> "$GITHUB_OUTPUT"
+          fi
+
+  node-ci:
+    needs: detect
+    if: ${{ needs.detect.outputs.has_package == 'true' }}
+    uses: samuelzcom/samuelz-ci/.github/workflows/node-ci.yml@8a80ff8ea4b07d762fa1773437b0620aa6ac024b
+    with:
+      node-version: "20"
+      working-directory: "."
+      use-cache: false
+
+  security-fallback:
+    needs: detect
+    if: ${{ needs.detect.outputs.has_package == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          case "${{ needs.detect.outputs.lockfile_type }}" in
+            npm)
+              npm ci --ignore-scripts
+              ;;
+            pnpm)
+              corepack enable
+              pnpm install --frozen-lockfile --ignore-scripts
+              ;;
+            yarn)
+              corepack enable
+              yarn install --frozen-lockfile --ignore-scripts
+              ;;
+            bun)
+              curl -fsSL https://bun.sh/install | bash
+              export PATH="$HOME/.bun/bin:$PATH"
+              bun install --frozen-lockfile
+              ;;
+            none)
+              npm install --ignore-scripts
+              ;;
+            *)
+              echo "Unsupported lockfile type: ${{ needs.detect.outputs.lockfile_type }}" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Dependency audit (high and above)
+        shell: bash
+        run: |
+          case "${{ needs.detect.outputs.lockfile_type }}" in
+            npm|none)
+              npm audit --audit-level=high
+              ;;
+            pnpm)
+              pnpm audit --audit-level=high
+              ;;
+            yarn)
+              yarn npm audit --severity high
+              ;;
+            bun)
+              echo "Bun audit command not standardized yet; skipping package audit."
+              ;;
+          esac
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  non-node-ci:
+    needs: detect
+    if: ${{ needs.detect.outputs.has_package != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Non-node repository check
+        run: echo "No package.json detected; CI passes for non-node repository."
+
+  ci:
+    name: ci
+    needs:
+      - detect
+      - node-ci
+      - security-fallback
+      - non-node-ci
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce aggregate CI result
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ needs.detect.result }}" != "success" ]; then
+            echo "detect job did not succeed."
+            exit 1
+          fi
+
+          if [ "${{ needs.detect.outputs.has_package }}" = "true" ]; then
+            if [ "${{ needs.node-ci.result }}" != "success" ]; then
+              echo "node-ci job did not succeed."
+              exit 1
+            fi
+            if [ "${{ needs.security-fallback.result }}" != "success" ]; then
+              echo "security-fallback job did not succeed."
+              exit 1
+            fi
+          else
+            if [ "${{ needs.non-node-ci.result }}" != "success" ]; then
+              echo "non-node-ci job did not succeed."
+              exit 1
+            fi
+          fi
+
+          echo "Aggregate CI gate passed."
