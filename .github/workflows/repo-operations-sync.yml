@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   sync:
@@ -35,19 +34,29 @@ jobs:
 
           git clone --depth 1 --branch "$SOURCE_REF" "$clone_url" "$tmp_dir"
 
-          files=(
+          base_files=(
             "Makefile"
             ".editorconfig"
             ".github/dependabot.yml"
+            ".github/ownership.yml"
+            ".github/OWNERSHIP.md"
+            ".github/CODEOWNERS"
+          )
+
+          workflow_files=(
             ".github/workflows/ci.yml"
             ".github/workflows/repo-operations-action-failure-issue.yml"
             ".github/workflows/repo-operations-direct-push-guard.yml"
             ".github/workflows/repo-operations-merge-policy.yml"
             ".github/workflows/repo-operations-sync.yml"
-            ".github/ownership.yml"
-            ".github/OWNERSHIP.md"
-            ".github/CODEOWNERS"
           )
+
+          files=("${base_files[@]}")
+          if [ -n "$GH_TOKEN" ]; then
+            files+=("${workflow_files[@]}")
+          else
+            echo "REPO_OPERATIONS_TOKEN is not configured; skipping workflow file synchronization."
+          fi
 
           for file in "${files[@]}"; do
             if [ -f "$tmp_dir/$file" ]; then
@@ -66,4 +75,5 @@ jobs:
           git add -- "${files[@]}"
           git commit -m "chore(operations): sync repo operation templates [skip ci]"
 
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" "HEAD:$TARGET_BRANCH"
+          push_token="${GH_TOKEN:-${{ secrets.GITHUB_TOKEN }}}"
+          git push "https://x-access-token:${push_token}@github.com/${{ github.repository }}.git" "HEAD:$TARGET_BRANCH"
