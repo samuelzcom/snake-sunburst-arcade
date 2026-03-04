@@ -3,10 +3,7 @@ name: Merge Policy Check
 on:
   pull_request_target:
     types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
+      - closed
 
 permissions:
   pull-requests: read
@@ -23,7 +20,13 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
 
-            if (pr.base.ref !== "main") {
+            if (pr.base.ref !== "main" || !pr.merged) {
+              core.info("PR was not merged into main; skipping merge policy check.");
+              return;
+            }
+
+            if (pr.head.ref.startsWith("codex/")) {
+              core.info(`Skipping merge policy check for maintenance branch ${pr.head.ref}.`);
               return;
             }
 

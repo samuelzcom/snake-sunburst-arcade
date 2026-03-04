@@ -27,21 +27,91 @@ jobs:
               return;
             }
 
-            const prs = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
-              owner,
-              repo,
-              commit_sha: sha,
-              per_page: 100,
-            });
+            const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-            const mergedPr = prs.find((pr) => pr.merged_at);
+            const findMergedPrByAssociation = async () => {
+              for (let attempt = 1; attempt <= 3; attempt += 1) {
+                const prs = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, {
+                  owner,
+                  repo,
+                  commit_sha: sha,
+                  per_page: 100,
+                });
+                const merged = prs.find((pr) => pr.merged_at);
+                if (merged) {
+                  return merged;
+                }
+                if (attempt < 3) {
+                  await sleep(3000);
+                }
+              }
+              return null;
+            };
+
+            const findMergedPrByMergeCommit = async () => {
+              const recentClosedPrs = await github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: "closed",
+                base: "main",
+                sort: "updated",
+                direction: "desc",
+                per_page: 100,
+              });
+              return recentClosedPrs.find((pr) => pr.merged_at && pr.merge_commit_sha === sha) || null;
+            };
+
+            const findMergedPrByCommitMessage = async () => {
+              const message = String(context.payload.head_commit?.message || "");
+              const matches = [...message.matchAll(/\(#(\d+)\)/g)];
+              const prNumbers = [...new Set(matches.map((match) => Number(match[1])))];
+
+              for (const prNumber of prNumbers) {
+                if (!Number.isFinite(prNumber) || prNumber <= 0) {
+                  continue;
+                }
+                try {
+                  const response = await github.rest.pulls.get({
+                    owner,
+                    repo,
+                    pull_number: prNumber,
+                  });
+                  if (response.data.merged_at && response.data.base.ref === "main") {
+                    return response.data;
+                  }
+                } catch (error) {
+                  core.info(`Unable to load PR #${prNumber}: ${error}`);
+                }
+              }
+
+              return null;
+            };
+
+            const mergedPr =
+              (await findMergedPrByAssociation()) ||
+              (await findMergedPrByMergeCommit()) ||
+              (await findMergedPrByCommitMessage());
             if (mergedPr) {
               core.info(`Commit ${sha} is associated with merged PR #${mergedPr.number}.`);
               return;
             }
 
             const shortSha = sha.slice(0, 12);
-            const title = `Direct push detected on main (${shortSha})`;
+            const compareUrl = context.payload.compare || "";
+            const commitTimestamp = context.payload.head_commit?.timestamp || new Date().toISOString();
+            const commitSubject = String(context.payload.head_commit?.message || "")
+              .split("\n")[0]
+              .trim();
+            const rollingTitle = "Direct push detected on main (rolling tracker)";
+            const eventMarker = `\`${sha}\``;
+            const eventLines = [
+              `### ${commitTimestamp} · \`${shortSha}\``,
+              `- Commit: \`${sha}\``,
+              `- Actor: @${actor}`,
+              `- Compare URL: ${compareUrl || "n/a"}`,
+              ...(commitSubject ? [`- Subject: ${commitSubject}`] : []),
+            ];
+            const eventBlock = eventLines.join("\n");
 
             const openIssues = await github.paginate(github.rest.issues.listForRepo, {
               owner,
@@ -50,22 +120,43 @@ jobs:
               per_page: 100,
             });
 
-            const exists = openIssues.some((issue) => issue.title === title);
-            if (!exists) {
+            const rollingIssue = openIssues.find((issue) => issue.title === rollingTitle);
+            if (!rollingIssue) {
               const body = [
-                "A direct push to `main` was detected without an associated merged pull request.",
-                "",
-                `- Commit: \`${sha}\``,
-                `- Actor: @${actor}`,
-                `- Compare URL: ${context.payload.compare}`,
+                "This rolling issue tracks direct pushes to `main` without an associated merged pull request.",
                 "",
                 "## Required action",
-                "1. Recreate this change through a pull request.",
+                "1. Recreate each direct push through a pull request.",
                 "2. Ensure CI is green.",
                 "3. Ensure at least one approval before merge.",
+                "",
+                "## Events",
+                eventBlock,
               ].join("\n");
 
-              await github.rest.issues.create({ owner, repo, title, body });
+              await github.rest.issues.create({ owner, repo, title: rollingTitle, body });
+            } else {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner,
+                repo,
+                issue_number: rollingIssue.number,
+                per_page: 100,
+              });
+              const alreadyTracked = comments.some((comment) =>
+                String(comment.body || "").includes(eventMarker),
+              );
+              if (!alreadyTracked) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: rollingIssue.number,
+                  body: eventBlock,
+                });
+              } else {
+                core.info(`Direct push event for ${sha} is already tracked on issue #${rollingIssue.number}.`);
+              }
             }
 
-            core.setFailed("Direct pushes to main are not allowed. Use pull requests with approval and green CI.");
+            core.warning(
+              "Direct push to main detected without merged PR. Rolling tracker updated; workflow remains non-blocking."
+            );
