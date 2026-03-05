@@ -1,0 +1,15 @@
+allowed_roles:
+  - architect
+  - feature
+  - test
+  - debt
+protected_paths: []
+allow_protected_paths_for_roles:
+  - architect
+  - feature
+  - test
+  - debt
+allowed_base_branches: []
+max_concurrent_jobs_repo: 50
+repo_kill_switch: false
+max_estimated_cost_per_day: 100000
