@@ -6,7 +6,6 @@ ownership:
   operations:
     owner: "@samuelzcom"
     scope:
-      - "all .github/workflows/repo-operations-*.yml"
       - ".github/workflows/ci.yml"
       - ".github/dependabot.yml"
       - ".github/ownership.yml"
@@ -20,8 +19,8 @@ ownership:
       - "all non-operations areas"
 process:
   single_source: "samuelz-platform"
-  distribution: "weekly + manual workflow dispatch via repo-operations-sync"
+  distribution: "manual baseline rollout from samuelz-platform"
   drift_prevention:
-    - "Changes are made in this repository only."
-    - "Sibling repos are updated through sync workflow."
-    - "Do not manually edit files listed in operations scope in sibling repos."
+    - "Changes are made in samuelz-platform first."
+    - "Sibling repos are updated through intentional rollout work."
+    - "Do not let shared baseline files drift silently across sibling repos."

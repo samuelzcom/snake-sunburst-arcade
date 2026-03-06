@@ -1,14 +1,11 @@
 # Operations ownership is sourced from samuelz-platform.
-# Keep files aligned via repo-operations-sync.
+# Keep shared governance files aligned via intentional baseline rollouts.
 
-/.github/workflows/repo-operations-*.yml @samuelzcom
-/.github/workflows/repo-operations-action-failure-issue.yml @samuelzcom
-/.github/workflows/repo-operations-direct-push-guard.yml @samuelzcom
-/.github/workflows/repo-operations-merge-policy.yml @samuelzcom
-/.github/workflows/repo-operations-sync.yml @samuelzcom
 /.github/workflows/ci.yml @samuelzcom
 /.github/dependabot.yml @samuelzcom
 /.github/ownership.yml @samuelzcom
+/.github/OWNERSHIP.md @samuelzcom
+/.github/CODEOWNERS @samuelzcom
 /.editorconfig @samuelzcom
 /Makefile @samuelzcom
 
