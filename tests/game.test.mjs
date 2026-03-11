@@ -188,6 +188,30 @@ test("update stops processing queued steps after a collision ends the run", () =
   assert.ok(game.accumulator >= 1 / game.speed);
 });
 
+test("update processes whole steps and preserves the fractional remainder", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+  game.accumulator = 0;
+  game.elapsed = 0;
+
+  game.update(0.25);
+
+  assert.deepEqual(game.snake, [
+    { x: 13, y: 12 },
+    { x: 12, y: 12 },
+    { x: 11, y: 12 },
+  ]);
+  assert.equal(game.elapsed, 0.25);
+  assert.ok(Math.abs(game.accumulator - 0.05) < Number.EPSILON);
+});
+
 test("wall collisions persist a newly earned best score", () => {
   const localStorage = createStorage();
   globalThis.window = { localStorage };
