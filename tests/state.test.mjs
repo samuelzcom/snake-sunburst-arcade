@@ -49,6 +49,16 @@ test("invalid stored best score falls back to zero", () => {
   assert.equal(game.getState().bestScore, 0);
 });
 
+test("negative stored best score is clamped to zero", () => {
+  globalThis.window = {
+    localStorage: createStorage([["snake.sunburst.bestScore", "-25"]]),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  assert.equal(game.getState().bestScore, 0);
+});
+
 test("reverse direction changes are ignored", () => {
   globalThis.window = {
     localStorage: createStorage(),

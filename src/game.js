@@ -338,7 +338,7 @@ export class SnakeGame {
     }
 
     const parsed = Number(raw);
-    return Number.isFinite(parsed) ? parsed : 0;
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
   }
 
   saveBestScore() {
