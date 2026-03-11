@@ -77,3 +77,13 @@ When updating build-time tooling such as `@cloudflare/vite-plugin`, keep the cha
 - rerun `npm run validate` before opening or refreshing the PR
 
 That sequence keeps dependency-only changes easy to review and makes it safer to supersede stalled automation PRs with a fully validated branch update.
+
+## Stalled Dependency PR Triage
+
+If an automated dependency PR sits idle, review the diff before rebasing or merging it:
+
+- major toolchain bumps should usually change `package.json` and `package-lock.json` only
+- if the PR also edits application code or removes tests, treat it as unsafe to merge without a human-authored follow-up
+- prefer superseding the stalled PR with a small replacement branch that documents the risk or carries a fully validated dependency-only update
+
+For example, if a bot-generated Vite upgrade touches `src/` or `tests/`, close or supersede that branch explicitly instead of folding unrelated behavior changes into routine dependency maintenance.
