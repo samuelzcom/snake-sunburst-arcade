@@ -63,7 +63,12 @@ export class SnakeGame {
   }
 
   setSpeed(value) {
-    this.speed = clamp(Number(value), MIN_SPEED, MAX_SPEED);
+    const nextSpeed = Number(value);
+    if (!Number.isFinite(nextSpeed)) {
+      return;
+    }
+
+    this.speed = clamp(nextSpeed, MIN_SPEED, MAX_SPEED);
     this.emitState();
   }
 
