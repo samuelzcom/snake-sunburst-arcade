@@ -277,15 +277,18 @@ export class SnakeGame {
       return null;
     }
 
-    let candidate = null;
-    do {
-      candidate = {
-        x: Math.floor(Math.random() * GRID_SIZE),
-        y: Math.floor(Math.random() * GRID_SIZE),
-      };
-    } while (occupied.has(String(candidate.x) + ":" + String(candidate.y)));
+    const openCells = [];
+    for (let y = 0; y < GRID_SIZE; y += 1) {
+      for (let x = 0; x < GRID_SIZE; x += 1) {
+        const key = String(x) + ":" + String(y);
+        if (!occupied.has(key)) {
+          openCells.push({ x, y });
+        }
+      }
+    }
 
-    return candidate;
+    const index = Math.floor(Math.random() * openCells.length);
+    return openCells[index];
   }
 
   endGame({ won = false } = {}) {
