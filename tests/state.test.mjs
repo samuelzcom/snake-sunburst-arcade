@@ -49,6 +49,42 @@ test("invalid stored best score falls back to zero", () => {
   assert.equal(game.getState().bestScore, 0);
 });
 
+test("unavailable localStorage falls back to zero best score", () => {
+  globalThis.window = {
+    localStorage: {
+      getItem() {
+        throw new Error("storage disabled");
+      },
+      setItem() {
+        throw new Error("storage disabled");
+      },
+    },
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  assert.equal(game.getState().bestScore, 0);
+});
+
+test("storage write failures do not interrupt best score updates", () => {
+  globalThis.window = {
+    localStorage: {
+      getItem() {
+        return null;
+      },
+      setItem() {
+        throw new Error("storage disabled");
+      },
+    },
+  };
+
+  const game = new SnakeGame(createCanvas());
+  game.score = 30;
+
+  assert.doesNotThrow(() => game.endGame());
+  assert.equal(game.getState().bestScore, 30);
+});
+
 test("reverse direction changes are ignored", () => {
   globalThis.window = {
     localStorage: createStorage(),
