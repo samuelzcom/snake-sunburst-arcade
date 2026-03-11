@@ -66,4 +66,6 @@ GitHub Actions runs the same basic health checks expected locally:
 - dependency install and audit through `.github/workflows/ci.yml`
 - project validation through the repository scripts in `package.json`
 
+The workflow uses `actions/checkout@v6`, which requires a current GitHub Actions runner. GitHub-hosted `ubuntu-latest` runners satisfy that requirement; self-hosted runners should be kept at or above the upstream minimum before mirroring this workflow.
+
 For the lowest-friction maintenance path, prefer changes that keep `npm run validate` green locally before pushing.
