@@ -188,6 +188,36 @@ test("update stops processing queued steps after a collision ends the run", () =
   assert.ok(game.accumulator >= 1 / game.speed);
 });
 
+test("update stops processing queued steps after filling the final open cell", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+  const boardCells = GRID_SIZE * GRID_SIZE;
+  const fullBoard = [];
+
+  for (let index = 0; index < boardCells; index += 1) {
+    fullBoard.push({ x: index % GRID_SIZE, y: Math.floor(index / GRID_SIZE) });
+  }
+
+  game.snake = fullBoard.slice(1);
+  game.direction = "left";
+  game.nextDirection = "left";
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+  game.accumulator = 0;
+
+  game.update(0.35);
+
+  assert.equal(game.alive, false);
+  assert.equal(game.won, true);
+  assert.equal(game.food, null);
+  assert.equal(game.snake.length, boardCells);
+  assert.ok(game.accumulator >= 1 / game.speed);
+});
+
 test("update processes whole steps and preserves the fractional remainder", () => {
   globalThis.window = {
     localStorage: createStorage(),
