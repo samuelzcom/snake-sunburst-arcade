@@ -110,6 +110,7 @@ export class SnakeGame {
     this.elapsed = 0;
     this.paused = false;
     this.alive = true;
+    this.won = false;
     this.food = this.createFood();
 
     this.emitScore();
@@ -120,6 +121,7 @@ export class SnakeGame {
     return {
       alive: this.alive,
       paused: this.paused,
+      won: this.won,
       speed: this.speed,
       score: this.score,
       bestScore: this.bestScore,
@@ -171,14 +173,16 @@ export class SnakeGame {
       ctx.stroke();
     }
 
-    const pulse = 0.26 + Math.abs(Math.sin(this.elapsed * 4)) * 0.18;
-    const foodX = this.food.x * tile + tile / 2;
-    const foodY = this.food.y * tile + tile / 2;
+    if (this.food) {
+      const pulse = 0.26 + Math.abs(Math.sin(this.elapsed * 4)) * 0.18;
+      const foodX = this.food.x * tile + tile / 2;
+      const foodY = this.food.y * tile + tile / 2;
 
-    ctx.beginPath();
-    ctx.fillStyle = "#ff6418";
-    ctx.arc(foodX, foodY, tile * pulse, 0, Math.PI * 2);
-    ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = "#ff6418";
+      ctx.arc(foodX, foodY, tile * pulse, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     this.snake.forEach((segment, index) => {
       const x = segment.x * tile;
@@ -200,7 +204,9 @@ export class SnakeGame {
     });
 
     if (!this.alive || this.paused) {
-      this.renderOverlay(!this.alive ? "Game Over" : "Paused", !this.alive ? "Enter = Restart" : "Space = Resume");
+      const headline = !this.alive ? (this.won ? "You Win" : "Game Over") : "Paused";
+      const detail = !this.alive ? "Enter = Restart" : "Space = Resume";
+      this.renderOverlay(headline, detail);
     }
   }
 
@@ -240,12 +246,18 @@ export class SnakeGame {
 
     if (grows) {
       this.score += 10;
-      this.food = this.createFood();
       if (this.score > this.bestScore) {
         this.bestScore = this.score;
         this.saveBestScore();
       }
+
+      this.food = this.createFood();
       this.emitScore();
+
+      if (!this.food) {
+        this.endGame({ won: true });
+        return;
+      }
     } else {
       this.snake.pop();
     }
@@ -255,6 +267,10 @@ export class SnakeGame {
 
   createFood() {
     const occupied = new Set(this.snake.map((segment) => String(segment.x) + ":" + String(segment.y)));
+
+    if (occupied.size >= GRID_SIZE * GRID_SIZE) {
+      return null;
+    }
 
     let candidate = null;
     do {
@@ -267,9 +283,10 @@ export class SnakeGame {
     return candidate;
   }
 
-  endGame() {
+  endGame({ won = false } = {}) {
     this.alive = false;
     this.paused = false;
+    this.won = won;
 
     if (this.score > this.bestScore) {
       this.bestScore = this.score;

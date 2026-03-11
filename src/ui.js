@@ -28,7 +28,7 @@ export function bindUI(game, elements) {
 
   const updateStatus = (state) => {
     if (!state.alive) {
-      status.textContent = "Game Over";
+      status.textContent = state.won ? "You Win" : "Game Over";
       pauseButton.textContent = "Pause";
       return;
     }
