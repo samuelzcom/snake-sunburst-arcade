@@ -332,7 +332,14 @@ export class SnakeGame {
   }
 
   loadBestScore() {
-    const raw = window.localStorage.getItem(STORAGE_KEY_BEST_SCORE);
+    let raw = null;
+
+    try {
+      raw = window.localStorage.getItem(STORAGE_KEY_BEST_SCORE);
+    } catch {
+      return 0;
+    }
+
     if (!raw) {
       return 0;
     }
@@ -342,6 +349,10 @@ export class SnakeGame {
   }
 
   saveBestScore() {
-    window.localStorage.setItem(STORAGE_KEY_BEST_SCORE, String(this.bestScore));
+    try {
+      window.localStorage.setItem(STORAGE_KEY_BEST_SCORE, String(this.bestScore));
+    } catch {
+      // Ignore storage failures so gameplay continues in restricted environments.
+    }
   }
 }

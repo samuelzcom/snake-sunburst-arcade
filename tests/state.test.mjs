@@ -15,6 +15,15 @@ const createStorage = (initialEntries = []) => {
   };
 };
 
+const createThrowingStorage = () => ({
+  getItem() {
+    throw new Error("read blocked");
+  },
+  setItem() {
+    throw new Error("write blocked");
+  },
+});
+
 const createCanvas = () => ({
   getContext(kind) {
     assert.equal(kind, "2d");
@@ -49,6 +58,16 @@ test("invalid stored best score falls back to zero", () => {
   assert.equal(game.getState().bestScore, 0);
 });
 
+test("best score loading tolerates storage read failures", () => {
+  globalThis.window = {
+    localStorage: createThrowingStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  assert.equal(game.getState().bestScore, 0);
+});
+
 test("reverse direction changes are ignored", () => {
   globalThis.window = {
     localStorage: createStorage(),
@@ -59,4 +78,17 @@ test("reverse direction changes are ignored", () => {
   game.setDirection("left");
 
   assert.equal(game.nextDirection, "right");
+});
+
+test("best score saving tolerates storage write failures", () => {
+  globalThis.window = {
+    localStorage: createThrowingStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.score = 10;
+
+  assert.doesNotThrow(() => game.endGame());
+  assert.equal(game.getState().bestScore, 10);
 });
