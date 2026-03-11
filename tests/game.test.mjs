@@ -121,3 +121,33 @@ test("moving into the previous tail cell does not count as a body collision", ()
     { x: 1, y: 3 },
   ]);
 });
+
+test("createFood can select the final open cell without retry loops", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+  const boardCells = [];
+
+  for (let y = 0; y < GRID_SIZE; y += 1) {
+    for (let x = 0; x < GRID_SIZE; x += 1) {
+      if (x === GRID_SIZE - 1 && y === GRID_SIZE - 1) {
+        continue;
+      }
+
+      boardCells.push({ x, y });
+    }
+  }
+
+  game.snake = boardCells;
+
+  const originalRandom = Math.random;
+  Math.random = () => 0;
+
+  try {
+    assert.deepEqual(game.createFood(), { x: GRID_SIZE - 1, y: GRID_SIZE - 1 });
+  } finally {
+    Math.random = originalRandom;
+  }
+});
