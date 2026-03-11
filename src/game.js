@@ -41,8 +41,8 @@ export class SnakeGame {
     this.canvas = canvas;
     this.ctx = ctx;
     this.listeners = {
-      score: () => undefined,
-      state: () => undefined,
+      score: (_snapshot) => undefined,
+      state: (_state) => undefined,
     };
 
     this.bestScore = this.loadBestScore();

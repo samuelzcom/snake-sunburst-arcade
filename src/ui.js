@@ -1,6 +1,7 @@
 const isElement = (node) => node instanceof HTMLElement;
 const isInput = (node) => node instanceof HTMLInputElement;
 const isNodeList = (node) => node instanceof NodeList;
+const isButton = (node) => node instanceof HTMLButtonElement;
 
 export function bindUI(game, elements) {
   const {
@@ -63,6 +64,10 @@ export function bindUI(game, elements) {
   });
 
   padButtons.forEach((button) => {
+    if (!isButton(button)) {
+      return;
+    }
+
     button.addEventListener("click", () => {
       const direction = button.dataset.direction;
       if (direction) {
