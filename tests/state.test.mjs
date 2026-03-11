@@ -92,3 +92,17 @@ test("best score saving tolerates storage write failures", () => {
   assert.doesNotThrow(() => game.endGame());
   assert.equal(game.getState().bestScore, 10);
 });
+
+test("togglePause is ignored after the run has ended", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.endGame();
+
+  assert.equal(game.getState().paused, false);
+  assert.equal(game.togglePause(), false);
+  assert.equal(game.getState().paused, false);
+});
