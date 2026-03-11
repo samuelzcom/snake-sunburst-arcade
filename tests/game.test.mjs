@@ -91,3 +91,33 @@ test("setSpeed ignores invalid values and clamps valid ones", () => {
   game.setSpeed(MAX_SPEED + 10);
   assert.equal(game.getState().speed, MAX_SPEED);
 });
+
+test("moving into the previous tail cell does not count as a body collision", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.snake = [
+    { x: 2, y: 2 },
+    { x: 2, y: 3 },
+    { x: 1, y: 3 },
+    { x: 1, y: 2 },
+  ];
+  game.direction = "up";
+  game.nextDirection = "left";
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+
+  game.step();
+
+  assert.equal(game.alive, true);
+  assert.deepEqual(game.snake, [
+    { x: 1, y: 2 },
+    { x: 2, y: 2 },
+    { x: 2, y: 3 },
+    { x: 1, y: 3 },
+  ]);
+});
