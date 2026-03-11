@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GRID_SIZE } from "../src/constants.js";
+import { GRID_SIZE, INITIAL_SPEED, MAX_SPEED, MIN_SPEED } from "../src/constants.js";
 import { SnakeGame } from "../src/game.js";
 
 const createStorage = () => {
@@ -71,4 +71,23 @@ test("winning on the final food ends the game without creating impossible food",
   assert.equal(game.score, 60);
   assert.equal(game.bestScore, 60);
   assert.equal(game.snake.length, boardCells);
+});
+
+test("setSpeed ignores invalid values and clamps valid ones", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  assert.equal(game.getState().speed, INITIAL_SPEED);
+
+  game.setSpeed("fast");
+  assert.equal(game.getState().speed, INITIAL_SPEED);
+
+  game.setSpeed(MIN_SPEED - 10);
+  assert.equal(game.getState().speed, MIN_SPEED);
+
+  game.setSpeed(MAX_SPEED + 10);
+  assert.equal(game.getState().speed, MAX_SPEED);
 });
