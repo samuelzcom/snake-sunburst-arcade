@@ -67,3 +67,13 @@ GitHub Actions runs the same basic health checks expected locally:
 - project validation through the repository scripts in `package.json`
 
 For the lowest-friction maintenance path, prefer changes that keep `npm run validate` green locally before pushing.
+
+## Dependency Maintenance
+
+When updating build-time tooling such as `@cloudflare/vite-plugin`, keep the change narrow:
+
+- update the declared version in `package.json`
+- refresh `package-lock.json` with `npm install`
+- rerun `npm run validate` before opening or refreshing the PR
+
+That sequence keeps dependency-only changes easy to review and makes it safer to supersede stalled automation PRs with a fully validated branch update.
