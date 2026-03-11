@@ -1,7 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GRID_SIZE, INITIAL_SPEED, MAX_SPEED, MIN_SPEED } from "../src/constants.js";
+import {
+  GRID_SIZE,
+  INITIAL_SPEED,
+  MAX_SPEED,
+  MIN_SPEED,
+  STORAGE_KEY_BEST_SCORE,
+} from "../src/constants.js";
 import { SnakeGame } from "../src/game.js";
 
 const createStorage = () => {
@@ -150,4 +156,60 @@ test("createFood can select the final open cell without retry loops", () => {
   } finally {
     Math.random = originalRandom;
   }
+});
+
+test("update stops processing queued steps after a collision ends the run", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.snake = [
+    { x: GRID_SIZE - 2, y: 4 },
+    { x: GRID_SIZE - 3, y: 4 },
+    { x: GRID_SIZE - 4, y: 4 },
+  ];
+  game.direction = "right";
+  game.nextDirection = "right";
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+  game.accumulator = 0;
+
+  game.update(0.35);
+
+  assert.equal(game.alive, false);
+  assert.deepEqual(game.snake, [
+    { x: GRID_SIZE - 1, y: 4 },
+    { x: GRID_SIZE - 2, y: 4 },
+    { x: GRID_SIZE - 3, y: 4 },
+  ]);
+  assert.ok(game.accumulator >= 1 / game.speed);
+});
+
+test("wall collisions persist a newly earned best score", () => {
+  const localStorage = createStorage();
+  globalThis.window = { localStorage };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.snake = [
+    { x: GRID_SIZE - 1, y: 8 },
+    { x: GRID_SIZE - 2, y: 8 },
+    { x: GRID_SIZE - 3, y: 8 },
+  ];
+  game.direction = "right";
+  game.nextDirection = "right";
+  game.food = { x: 0, y: 0 };
+  game.score = 40;
+  game.bestScore = 30;
+  game.alive = true;
+  game.paused = false;
+
+  game.step();
+
+  assert.equal(game.alive, false);
+  assert.equal(game.bestScore, 40);
+  assert.equal(localStorage.getItem(STORAGE_KEY_BEST_SCORE), "40");
 });
