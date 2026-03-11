@@ -48,6 +48,8 @@ window.addEventListener("keydown", (event) => {
   }
 
   if (event.code === "Enter") {
-    game.reset();
+    if (!game.getState().alive) {
+      game.reset();
+    }
   }
 });
