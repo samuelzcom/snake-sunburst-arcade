@@ -284,7 +284,16 @@ test("main only restarts from Enter after the run has ended", async () => {
 
   const keydown = keyListeners.get("keydown");
 
-  keydown({ key: "Enter", code: "Enter", preventDefault() {} });
+  const ignoredRestartEvent = {
+    key: "Enter",
+    code: "Enter",
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  keydown(ignoredRestartEvent);
+  assert.equal(ignoredRestartEvent.defaultPrevented, false);
   assert.equal(status.textContent, "Running");
 
   const moveEvent = {
@@ -302,7 +311,16 @@ test("main only restarts from Enter after the run has ended", async () => {
   assert.equal(status.textContent, "Game Over");
   assert.equal(score.textContent, "0");
 
-  keydown({ key: "Enter", code: "Enter", preventDefault() {} });
+  const restartEvent = {
+    key: "Enter",
+    code: "Enter",
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  keydown(restartEvent);
+  assert.equal(restartEvent.defaultPrevented, true);
   assert.equal(status.textContent, "Running");
   assert.equal(score.textContent, "0");
 });
