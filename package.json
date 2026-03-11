@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "node -e \"console.log('lint: no-op')\"",
     "typecheck": "node -e \"console.log('typecheck: no-op')\"",
-    "test": "node --test tests/smoke.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "validate": "npm run -s lint && npm run -s typecheck && npm run -s test && npm run -s build"
   },
   "devDependencies": {
