@@ -325,6 +325,118 @@ test("main only restarts from Enter after the run has ended", async () => {
   assert.equal(score.textContent, "0");
 });
 
+test("main keyboard controls resume paused play and do not change a finished run", async () => {
+  installDomGlobals();
+
+  const canvas = new FakeHTMLCanvasElement();
+  const score = new FakeHTMLElement();
+  const bestScore = new FakeHTMLElement();
+  const status = new FakeHTMLElement();
+  const speed = new FakeHTMLInputElement("10");
+  const speedLabel = new FakeHTMLElement();
+  const pauseButton = new FakeHTMLButtonElement();
+  const restartButton = new FakeHTMLButtonElement();
+  const upButton = new FakeHTMLButtonElement();
+  upButton.dataset.direction = "up";
+  const padButtons = new FakeNodeList(upButton);
+
+  const selectors = new Map([
+    ["#board", canvas],
+    ["#score", score],
+    ["#best-score", bestScore],
+    ["#status", status],
+    ["#speed", speed],
+    ["#speed-label", speedLabel],
+    ["#pause-btn", pauseButton],
+    ["#restart-btn", restartButton],
+  ]);
+
+  const keyListeners = new Map();
+  const animationFrames = [];
+
+  globalThis.document = {
+    querySelector(selector) {
+      return selectors.get(selector) ?? null;
+    },
+    querySelectorAll(selector) {
+      assert.equal(selector, ".pad button");
+      return padButtons;
+    },
+  };
+
+  globalThis.performance = {
+    now() {
+      return 0;
+    },
+  };
+
+  globalThis.window = {
+    localStorage: createStorage(),
+    requestAnimationFrame(callback) {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    },
+    addEventListener(type, handler) {
+      keyListeners.set(type, handler);
+    },
+  };
+
+  await importMainModule(`pause-resume=${Date.now()}`);
+
+  const keydown = keyListeners.get("keydown");
+
+  const pauseEvent = {
+    key: " ",
+    code: "Space",
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  keydown(pauseEvent);
+  assert.equal(pauseEvent.defaultPrevented, true);
+  assert.equal(status.textContent, "Paused");
+
+  const resumeEvent = {
+    key: " ",
+    code: "Space",
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  keydown(resumeEvent);
+  assert.equal(resumeEvent.defaultPrevented, true);
+  assert.equal(status.textContent, "Running");
+
+  const moveEvent = {
+    key: "ArrowUp",
+    code: "ArrowUp",
+    preventDefault() {},
+  };
+  keydown(moveEvent);
+  animationFrames.shift()(150);
+
+  for (let frame = 0; frame < 12; frame += 1) {
+    animationFrames.shift()(150 + (frame + 1) * 100);
+  }
+
+  assert.equal(status.textContent, "Game Over");
+
+  const finishedSpaceEvent = {
+    key: " ",
+    code: "Space",
+    defaultPrevented: false,
+    preventDefault() {
+      this.defaultPrevented = true;
+    },
+  };
+  keydown(finishedSpaceEvent);
+  assert.equal(finishedSpaceEvent.defaultPrevented, true);
+  assert.equal(status.textContent, "Game Over");
+  assert.equal(score.textContent, "0");
+});
+
 test("main throws when the board canvas is missing", async () => {
   installDomGlobals();
 
