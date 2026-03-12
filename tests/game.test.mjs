@@ -242,6 +242,49 @@ test("update processes whole steps and preserves the fractional remainder", () =
   assert.ok(Math.abs(game.accumulator - 0.05) < Number.EPSILON);
 });
 
+test("update ignores negative frame deltas", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+  const initialSnake = structuredClone(game.snake);
+
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+  game.accumulator = 0.04;
+  game.elapsed = 1.2;
+
+  game.update(-0.5);
+
+  assert.deepEqual(game.snake, initialSnake);
+  assert.equal(game.elapsed, 1.2);
+  assert.equal(game.accumulator, 0.04);
+});
+
+test("update ignores non-finite frame deltas", () => {
+  globalThis.window = {
+    localStorage: createStorage(),
+  };
+
+  const game = new SnakeGame(createCanvas());
+  const initialSnake = structuredClone(game.snake);
+
+  game.food = { x: 0, y: 0 };
+  game.alive = true;
+  game.paused = false;
+  game.accumulator = 0.03;
+  game.elapsed = 0.75;
+
+  game.update(Number.NaN);
+  game.update(Number.POSITIVE_INFINITY);
+
+  assert.deepEqual(game.snake, initialSnake);
+  assert.equal(game.elapsed, 0.75);
+  assert.equal(game.accumulator, 0.03);
+});
+
 test("wall collisions persist a newly earned best score", () => {
   const localStorage = createStorage();
   globalThis.window = { localStorage };
