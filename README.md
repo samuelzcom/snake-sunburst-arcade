@@ -87,3 +87,24 @@ If an automated dependency PR sits idle, review the diff before rebasing or merg
 - prefer superseding the stalled PR with a small replacement branch that documents the risk or carries a fully validated dependency-only update
 
 For example, if a bot-generated Vite upgrade touches `src/` or `tests/`, close or supersede that branch explicitly instead of folding unrelated behavior changes into routine dependency maintenance.
+
+Use this lightweight checklist before taking action on any stalled dependency PR:
+
+```bash
+gh pr diff <number> --repo samuelzcom/snake-sunburst-arcade
+npm run validate
+```
+
+Treat the PR as mergeable only when all of the following stay true:
+
+- the diff is limited to dependency manifests or lockfiles, plus any generated metadata that the package manager refreshes automatically
+- local validation passes without requiring source, test, or CI rewrites
+- the PR body still describes the same narrow maintenance change it actually contains
+
+Choose `supersede` instead of `merge` when any of the following show up:
+
+- `src/`, `tests/`, `scripts/`, or workflow files change alongside the dependency bump
+- the branch silently mixes behavior fixes, refactors, or expanded test coverage into the maintenance update
+- reviewers would need a code-level design review rather than a dependency-risk review
+
+When superseding, open a fresh narrow PR and state why the original branch was not merged. That preserves review clarity and keeps routine maintenance from carrying hidden product changes.
