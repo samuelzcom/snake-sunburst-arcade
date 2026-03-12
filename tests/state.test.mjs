@@ -106,3 +106,28 @@ test("togglePause is ignored after the run has ended", () => {
   assert.equal(game.togglePause(), false);
   assert.equal(game.getState().paused, false);
 });
+
+test("reset clears run state without discarding the best score", () => {
+  globalThis.window = {
+    localStorage: createStorage([["snake.sunburst.bestScore", "25"]]),
+  };
+
+  const game = new SnakeGame(createCanvas());
+
+  game.score = 10;
+  game.alive = false;
+  game.paused = true;
+  game.won = true;
+  game.speed = 14;
+
+  game.reset();
+
+  assert.deepEqual(game.getState(), {
+    alive: true,
+    paused: false,
+    won: false,
+    speed: 14,
+    score: 0,
+    bestScore: 25,
+  });
+});
