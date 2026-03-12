@@ -147,6 +147,23 @@ test("bindUI reflects paused and won states from the game", () => {
   assert.equal(wonElements.pauseButton.textContent, "Pause");
 });
 
+test("bindUI ignores non-button pad nodes", () => {
+  installDomGlobals();
+
+  const game = createGameStub();
+  const elements = createElements();
+  const strayNode = new FakeHTMLElement();
+  strayNode.dataset.direction = "down";
+  elements.padButtons.push(strayNode);
+
+  assert.doesNotThrow(() => bindUI(game, elements));
+
+  strayNode.dispatch("click");
+  elements.padButtons[0].dispatch("click");
+
+  assert.deepEqual(game.calls.setDirection, ["up"]);
+});
+
 test("bindUI rejects missing required DOM elements", () => {
   installDomGlobals();
 
