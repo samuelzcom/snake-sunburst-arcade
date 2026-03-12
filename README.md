@@ -82,6 +82,7 @@ That sequence keeps dependency-only changes easy to review and makes it safer to
 
 If an automated dependency PR sits idle, review the diff before rebasing or merging it:
 
+- confirm the PR is still open before doing any follow-up work
 - major toolchain bumps should usually change `package.json` and `package-lock.json` only
 - if the PR also edits application code or removes tests, treat it as unsafe to merge without a human-authored follow-up
 - prefer superseding the stalled PR with a small replacement branch that documents the risk or carries a fully validated dependency-only update
@@ -91,9 +92,16 @@ For example, if a bot-generated Vite upgrade touches `src/` or `tests/`, close o
 Use this lightweight checklist before taking action on any stalled dependency PR:
 
 ```bash
+gh pr view <number> --repo samuelzcom/snake-sunburst-arcade --json state,mergedAt,baseRefName,headRefName,url
 gh pr diff <number> --repo samuelzcom/snake-sunburst-arcade
 npm run validate
 ```
+
+Interpret the PR state before deciding what to do next:
+
+- `OPEN`: continue with merge-or-supersede review
+- `MERGED`: stop and document that no superseding action is needed
+- `CLOSED` without merge: either reopen with a clear reason or replace it with a new narrow PR
 
 Treat the PR as mergeable only when all of the following stay true:
 
