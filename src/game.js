@@ -138,6 +138,10 @@ export class SnakeGame {
       return;
     }
 
+    if (!Number.isFinite(deltaSeconds) || deltaSeconds <= 0) {
+      return;
+    }
+
     this.elapsed += deltaSeconds;
     this.accumulator += deltaSeconds;
 
