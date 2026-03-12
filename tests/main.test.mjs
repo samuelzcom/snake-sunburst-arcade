@@ -456,6 +456,93 @@ test("main keyboard controls resume paused play and do not change a finished run
   });
 });
 
+test("main accepts uppercase WASD keyboard input for movement", async () => {
+  await withFixedRandom(async () => {
+    installDomGlobals();
+
+    const canvas = new FakeHTMLCanvasElement();
+    const score = new FakeHTMLElement();
+    const bestScore = new FakeHTMLElement();
+    const status = new FakeHTMLElement();
+    const speed = new FakeHTMLInputElement("10");
+    const speedLabel = new FakeHTMLElement();
+    const pauseButton = new FakeHTMLButtonElement();
+    const restartButton = new FakeHTMLButtonElement();
+    const upButton = new FakeHTMLButtonElement();
+    upButton.dataset.direction = "up";
+    const padButtons = new FakeNodeList(upButton);
+
+    const selectors = new Map([
+      ["#board", canvas],
+      ["#score", score],
+      ["#best-score", bestScore],
+      ["#status", status],
+      ["#speed", speed],
+      ["#speed-label", speedLabel],
+      ["#pause-btn", pauseButton],
+      ["#restart-btn", restartButton],
+    ]);
+
+    const keyListeners = new Map();
+    const animationFrames = [];
+
+    globalThis.document = {
+      querySelector(selector) {
+        return selectors.get(selector) ?? null;
+      },
+      querySelectorAll(selector) {
+        assert.equal(selector, ".pad button");
+        return padButtons;
+      },
+    };
+
+    globalThis.performance = {
+      now() {
+        return 0;
+      },
+    };
+
+    globalThis.window = {
+      localStorage: createStorage(),
+      requestAnimationFrame(callback) {
+        animationFrames.push(callback);
+        return animationFrames.length;
+      },
+      addEventListener(type, handler) {
+        keyListeners.set(type, handler);
+      },
+    };
+
+    await importMainModule(`wasd-movement=${moduleImportCounter += 1}`);
+
+    const keydown = keyListeners.get("keydown");
+    const moveEvent = {
+      key: "W",
+      code: "KeyW",
+      defaultPrevented: false,
+      preventDefault() {
+        this.defaultPrevented = true;
+      },
+    };
+
+    keydown(moveEvent);
+    assert.equal(moveEvent.defaultPrevented, true);
+
+    animationFrames.shift()(150);
+
+    const headDraw = canvas.context.fillRectCalls.findLast(
+      (call) => call.fillStyle === "#08565f",
+    );
+    assert.deepEqual(headDraw, {
+      fillStyle: "#08565f",
+      x: 265,
+      y: 265,
+      width: 22,
+      height: 22,
+    });
+  });
+});
+
 test("main throws when the board canvas is missing", async () => {
   installDomGlobals();
 
