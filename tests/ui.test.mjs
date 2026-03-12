@@ -173,3 +173,18 @@ test("bindUI rejects missing required DOM elements", () => {
 
   assert.throws(() => bindUI(game, elements), /Control elements missing/);
 });
+
+test("bindUI rejects non-button pause and restart controls", () => {
+  installDomGlobals();
+
+  const game = createGameStub();
+  const elements = createElements();
+  elements.pauseButton = new FakeHTMLElement();
+
+  assert.throws(() => bindUI(game, elements), /Control elements missing/);
+
+  elements.pauseButton = new FakeHTMLButtonElement();
+  elements.restartButton = new FakeHTMLElement();
+
+  assert.throws(() => bindUI(game, elements), /Control elements missing/);
+});

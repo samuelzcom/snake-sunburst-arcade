@@ -19,7 +19,12 @@ export function bindUI(game, elements) {
     throw new Error("Score/status elements missing.");
   }
 
-  if (!isInput(speed) || !isElement(speedLabel) || !isElement(pauseButton) || !isElement(restartButton)) {
+  if (
+    !isInput(speed) ||
+    !isElement(speedLabel) ||
+    !isButton(pauseButton) ||
+    !isButton(restartButton)
+  ) {
     throw new Error("Control elements missing.");
   }
 
