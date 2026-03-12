@@ -131,6 +131,51 @@ test("bindUI initializes visible state and wires control interactions", () => {
   assert.deepEqual(game.calls.setDirection, ["up", "left"]);
 });
 
+test("bindUI re-syncs the speed control when the game clamps input values", () => {
+  installDomGlobals();
+
+  const state = {
+    alive: true,
+    paused: false,
+    won: false,
+    speed: 10,
+    score: 0,
+    bestScore: 0,
+  };
+
+  let emitState = null;
+
+  const game = {
+    getState() {
+      return { ...state };
+    },
+    onScoreChange(handler) {
+      handler({ score: state.score, bestScore: state.bestScore });
+    },
+    onStateChange(handler) {
+      emitState = handler;
+      handler({ ...state });
+    },
+    setSpeed(value) {
+      state.speed = Math.min(20, Math.max(6, Number(value)));
+      emitState?.({ ...state });
+    },
+    setDirection() {},
+    togglePause() {},
+    reset() {},
+  };
+
+  const elements = createElements();
+
+  bindUI(game, elements);
+
+  elements.speed.value = "100";
+  elements.speed.dispatch("input");
+
+  assert.equal(elements.speed.value, "20");
+  assert.equal(elements.speedLabel.textContent, "20");
+});
+
 test("bindUI reflects paused and won states from the game", () => {
   installDomGlobals();
 

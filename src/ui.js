@@ -45,6 +45,7 @@ export function bindUI(game, elements) {
 
   game.onStateChange((state) => {
     updateStatus(state);
+    speed.value = String(state.speed);
     speedLabel.textContent = String(state.speed);
   });
 
